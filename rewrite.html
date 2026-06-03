@@ -1,0 +1,2646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Rehearsal Calendar</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #080806;
+  --panel: #11110F;
+  --panel2: #171714;
+  --cream: #F3EFE2;
+  --cream2: #CFC7B4;
+  --muted: #817867;
+  --orange: #F06A25;
+  --orange2: #FF8A33;
+  --amber: #C4995A;
+  --amber2: #D4AA72;
+  --green: #63B36A;
+  --release: #A884C8;
+  --rule: rgba(243,239,226,.16);
+  --rule2: rgba(243,239,226,.08);
+}
+
+html, body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--cream);
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(0deg, rgba(243,239,226,.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(243,239,226,.024) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+button {
+  font: inherit;
+}
+
+.screen {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  transition: opacity .65s ease, transform .65s ease;
+  z-index: 1;
+}
+
+.screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+}
+
+.screen.gone {
+  display: none;
+}
+
+/* LANDING */
+
+#intro {
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 3vw, 40px);
+  background: var(--bg);
+}
+
+.intro-shell {
+  width: min(1180px, calc(100vw - 48px));
+  min-width: 1040px;
+  min-height: min(760px, 88vh);
+  border: 1.5px solid var(--cream);
+  display: grid;
+  grid-template-columns: 56% 44%;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.intro-left,
+.intro-right {
+  min-height: min(760px, 88vh);
+  padding: clamp(32px, 4vw, 62px);
+}
+
+.intro-left {
+  border-right: 1.5px solid var(--cream);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(20px, 3vw, 48px);
+}
+
+.intro-right {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: clamp(44px, 6vw, 82px);
+  min-width: 430px;
+}
+
+.eyebrow,
+.micro,
+.mono {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.micro {
+  white-space: nowrap;
+}
+
+.micro strong {
+  color: var(--cream);
+  font-weight: 500;
+}
+
+.intro-main {
+  align-self: center;
+}
+
+.intro-title {
+  max-width: 650px;
+  font-size: clamp(52px, 6.4vw, 96px);
+  line-height: .94;
+  letter-spacing: -.065em;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding-top: .04em;
+}
+
+.orange-rule {
+  width: 58px;
+  height: 4px;
+  background: var(--orange);
+  margin: clamp(28px, 3vw, 44px) 0;
+}
+
+.intro-copy {
+  max-width: 520px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(17px, 1.55vw, 22px);
+  line-height: 1.55;
+  letter-spacing: -.015em;
+  color: var(--cream2);
+}
+
+.intro-copy p + p {
+  margin-top: 1.4rem;
+}
+
+.intro-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .85rem;
+}
+
+.btn {
+  cursor: pointer;
+  border: 1.5px solid var(--cream);
+  padding: 15px 22px;
+  background: var(--cream);
+  color: var(--bg);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  transition: all .2s ease;
+}
+
+.btn:hover {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--bg);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--cream);
+}
+
+.btn.ghost:hover {
+  background: var(--cream);
+  color: var(--bg);
+}
+
+.eyebrow-authors {
+  display: block;
+  margin-top: .3rem;
+  color: var(--muted);
+}
+
+.eyebrow-link,
+.footer-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  transition: border-color .2s, color .2s;
+}
+
+.eyebrow-link:hover,
+.footer-link:hover {
+  color: var(--cream);
+  border-color: var(--cream2);
+}
+
+/* Landing reading */
+.landing-reading {
+  align-self: center;
+  width: 100%;
+  max-width: 520px;
+  overflow: visible;
+}
+
+.calendar-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  letter-spacing: .13em;
+  line-height: 1.7;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.calendar-label span {
+  color: var(--cream);
+  font-weight: 500;
+}
+
+.intro-progress {
+  display: flex;
+  gap: .65rem;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.intro-progress span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: .55;
+}
+
+.intro-progress span.active {
+  background: var(--orange2);
+  opacity: 1;
+}
+
+.fade-change {
+  animation: fadeChange .5s ease;
+}
+
+@keyframes fadeChange {
+  from { opacity: .28; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* MAIN */
+
+#main {
+  background: var(--bg);
+  display: none;
+}
+
+#main.visible {
+  display: block;
+}
+
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2rem 1.2rem 5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1.5px solid var(--cream);
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  background: linear-gradient(180deg, var(--bg) 84%, rgba(8,8,6,0));
+  z-index: 40;
+}
+
+.topbar-back,
+.topbar-time {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.topbar-back {
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.intro-sound-row {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  margin-top: .2rem;
+}
+
+.sound-toggle {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  background: none;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  padding: .4rem .75rem;
+  transition: border-color .2s, color .2s;
+  border-radius: 0;
+}
+
+.sound-toggle:hover {
+  border-color: var(--cream2);
+}
+
+.sound-toggle.muted {
+  opacity: .45;
+}
+
+.sound-icon {
+  font-size: 13px;
+  color: var(--cream2);
+  line-height: 1;
+}
+
+.sound-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--cream2);
+}
+
+.topbar-back:hover {
+  color: var(--orange);
+}
+
+.practice-explain-text {
+  font-size: 15px;
+  line-height: 1.38;
+  color: var(--muted);
+  letter-spacing: -.01em;
+}
+
+.section-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .9rem;
+}
+
+.hero,
+.community-panel,
+.practice,
+.map-wrap {
+  background: var(--panel);
+  border: 1.5px solid var(--cream);
+}
+
+.hero {
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.hero h1 {
+  font-size: clamp(46px, 7.7vw, 98px);
+  line-height: .9;
+  letter-spacing: -.08em;
+  font-weight: 900;
+  padding-top: .07em;
+  text-transform: uppercase;
+}
+
+.hero p {
+  font-size: clamp(19px, 2vw, 26px);
+  line-height: 1.18;
+  letter-spacing: -.035em;
+  font-weight: 750;
+  color: var(--cream2);
+  margin-bottom: 1rem;
+}
+
+.community-panel {
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.community-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.community-top p {
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: -.03em;
+  font-weight: 720;
+  max-width: 700px;
+  color: var(--cream2);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+
+.tab-btn {
+  cursor: pointer;
+  background: transparent;
+  color: var(--cream2);
+  border: 1px solid var(--rule);
+  padding: .75rem .9rem;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  transition: .2s ease;
+}
+
+.tab-btn:hover {
+  border-color: var(--cream);
+  color: var(--cream);
+}
+
+.tab-btn.active {
+  background: var(--cream);
+  color: var(--bg);
+  border-color: var(--cream);
+}
+
+.practice-count {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Map */
+.map-section {
+  margin-bottom: 2rem;
+}
+
+.map-wrap {
+  padding: 1rem;
+  position: relative;
+}
+
+#world-map {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.map-tooltip {
+  position: absolute;
+  background: var(--panel2);
+  border: 1px solid var(--rule);
+  padding: 7px 10px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  color: var(--cream2);
+  pointer-events: none;
+  opacity: 0;
+  transition: .2s;
+  white-space: nowrap;
+  z-index: 10;
+  text-transform: uppercase;
+}
+
+.map-legend {
+  display: flex;
+  gap: 1.3rem;
+  flex-wrap: wrap;
+  margin-top: .75rem;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* Aggregate panel */
+.aggregate-panel {
+  background: var(--panel);
+  border: 1.5px solid var(--cream);
+  padding: 1.4rem 1.6rem;
+  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: center;
+}
+
+.agg-sentence {
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.28;
+  letter-spacing: -.03em;
+  font-weight: 700;
+  color: var(--cream2);
+  max-width: 560px;
+}
+
+.agg-right {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.agg-stat {
+  text-align: right;
+}
+
+.agg-num {
+  font-size: clamp(28px, 3.5vw, 46px);
+  line-height: 1;
+  letter-spacing: -.06em;
+  font-weight: 900;
+  color: var(--cream);
+}
+
+.agg-num.is-drifting {
+  color: var(--amber2);
+}
+
+.agg-num.is-current {
+  color: var(--green);
+}
+
+.agg-num.is-released {
+  color: var(--release);
+}
+
+.agg-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: .3rem;
+}
+
+@media (max-width: 850px) {
+  .aggregate-panel {
+    grid-template-columns: 1fr;
+  }
+  .agg-right {
+    justify-content: flex-start;
+  }
+  .agg-stat {
+    text-align: left;
+  }
+}
+
+/* Cycle ring */
+.practice-card-inner {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 0;
+}
+
+.practice-ring-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.4rem 1rem 1.4rem 1.4rem;
+  border-right: 1px solid var(--rule);
+  gap: .5rem;
+}
+
+.cycle-ring {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+
+.cycle-label-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.practice-body-col {
+  min-width: 0;
+}
+
+.practice-body-col .practice-head {
+  padding: 1.15rem 1.25rem .55rem;
+}
+
+.practice-body-col .practice-meta {
+  padding: 0 1.25rem 1rem;
+}
+
+@media (max-width: 600px) {
+  .practice-card-inner {
+    grid-template-columns: 1fr;
+  }
+  .practice-ring-col {
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 1rem 1.25rem;
+  }
+}
+
+.intro-month-display {
+  font-size: clamp(52px, 7vw, 88px);
+  font-weight: 900;
+  line-height: .9;
+  letter-spacing: -.07em;
+  text-transform: uppercase;
+  color: var(--cream);
+  margin-top: .4rem;
+}
+
+.intro-drift-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--amber2);
+  margin-top: .5rem;
+  line-height: 1.5;
+}
+
+/* Landing ring and how */
+.intro-practice-row {
+  display: flex;
+  gap: 1.2rem;
+  align-items: flex-start;
+}
+
+.intro-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  flex-shrink: 0;
+}
+
+.intro-cycle-ring {
+  width: 88px;
+  height: 88px;
+}
+
+.intro-cycle-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+.intro-practice-info {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding-top: .2rem;
+}
+
+.intro-how {
+  border-top: 1px solid var(--rule);
+  padding-top: 1.2rem;
+  margin-top: 1.4rem;
+}
+
+.intro-how-steps {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+}
+
+.intro-how-step {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  letter-spacing: .04em;
+  color: var(--muted);
+}
+
+.intro-how-num {
+  color: var(--cream2);
+  font-weight: 500;
+}
+
+.intro-act-nudge {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--orange2);
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+/* Gregorian displacement tag */
+.greg-displacement {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--rule);
+  padding: 2px 6px;
+  margin-left: .5rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.greg-displacement.behind {
+  color: var(--amber2);
+  border-color: rgba(212,170,114,0.3);
+}
+
+.greg-displacement.current {
+  color: var(--green);
+  border-color: rgba(99,179,106,0.3);
+}
+
+.cycle-desc-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 7px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+  opacity: .7;
+  margin-top: .15rem;
+  max-width: 108px;
+}
+
+/* Card breathing room */
+.practices-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.practice {
+  margin-bottom: 1.8rem;
+  transition: .2s ease;
+  overflow: hidden;
+}
+
+.practice:hover {
+  border-color: var(--orange);
+}
+
+.practice.is-released {
+  opacity: .6;
+  border-style: dashed;
+}
+
+.practice.highlighted {
+  border-color: var(--orange);
+}
+
+.practice-head {
+  padding: 1.15rem 1.25rem .55rem;
+}
+
+.practice-name {
+  font-size: clamp(25px, 3vw, 40px);
+  line-height: .96;
+  letter-spacing: -.06em;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding-top: .05em;
+}
+
+.practice-reading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  margin-top: .5rem;
+  align-items: baseline;
+}
+
+.practice-month,
+.practice-drift-inline,
+.practice-geo {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+}
+
+.practice-month {
+  font-size: 13px;
+  letter-spacing: .12em;
+  color: var(--cream);
+}
+
+.practice-drift-inline {
+  font-size: 12px;
+  letter-spacing: .1em;
+  color: var(--amber2);
+}
+
+.practice-geo {
+  margin-top: .45rem;
+  font-size: 11px;
+  letter-spacing: .12em;
+  color: var(--muted);
+}
+
+.practice-context {
+  margin-top: .8rem;
+  font-size: 17px;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+  font-weight: 650;
+  color: var(--cream2);
+}
+
+/* Log and footer */
+
+.practice-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--rule);
+}
+
+.pact-btn {
+  padding: .9rem;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--cream2);
+  transition: .2s;
+}
+
+.pact-btn:first-child {
+  border-right: 1px solid var(--rule);
+}
+
+.pact-btn.ret:hover {
+  background: rgba(99,179,106,.12);
+  color: var(--green);
+}
+
+.pact-btn.rel:hover {
+  background: rgba(168,132,200,.12);
+  color: var(--release);
+}
+
+.pact-btn:disabled {
+  opacity: .25;
+  cursor: default;
+}
+
+.practice-released-line {
+  padding: .8rem 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--release);
+  text-transform: uppercase;
+}
+
+/* Feedback */
+.feedback {
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  background: rgba(8,8,6,.96);
+  display: none;
+  place-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.feedback.open {
+  display: grid;
+}
+
+.feedback-box {
+  border: 1.5px solid var(--cream);
+  background: var(--bg);
+  width: min(860px,94vw);
+  padding: clamp(1.7rem,4vw,3.2rem);
+}
+
+.feedback h2 {
+  font-size: clamp(54px, 9vw, 122px);
+  line-height: .86;
+  letter-spacing: -.08em;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding-top: .06em;
+}
+
+.feedback p {
+  margin: 1.1rem auto 0;
+  max-width: 650px;
+  font-size: clamp(19px,2vw,26px);
+  line-height: 1.18;
+  letter-spacing: -.035em;
+  font-weight: 750;
+  color: var(--cream2);
+}
+
+.feedback .mono {
+  margin-top: 1rem;
+  color: var(--orange2);
+}
+
+.feedback .btn {
+  margin-top: 1.5rem;
+}
+
+/* Confirm */
+.confirm {
+  position: fixed;
+  inset: 0;
+  background: rgba(8,8,6,.96);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 600;
+  padding: 2rem;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: .35s;
+}
+
+.confirm.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.confirm-q {
+  font-size: clamp(36px, 5.5vw, 80px);
+  line-height: .92;
+  letter-spacing: -.08em;
+  font-weight: 900;
+  max-width: 880px;
+}
+
+.confirm-sub {
+  margin: 1.2rem 0 2rem;
+  max-width: 640px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  letter-spacing: .12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.confirm-btns {
+  display: flex;
+  gap: .9rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cbtn {
+  padding: 14px 24px;
+  background: transparent;
+  border: 1.5px solid var(--cream);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: .2s;
+  color: var(--cream);
+}
+
+.cbtn.yes {
+  color: var(--release);
+  border-color: var(--release);
+}
+
+.cbtn.yes:hover {
+  background: var(--release);
+  color: var(--bg);
+}
+
+.cbtn.no:hover {
+  background: var(--cream);
+  color: var(--bg);
+}
+
+/* Log and footer */
+.log-section {
+  margin-top: 2.8rem;
+  padding-top: 1.6rem;
+  border-top: 1.5px solid var(--cream);
+}
+
+.log-empty {
+  font-size: 18px;
+  color: var(--muted);
+}
+
+.log-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: .6rem 0;
+  border-bottom: 1px solid var(--rule2);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.le-name {
+  flex: 1;
+}
+
+.le-action.returned {
+  color: var(--green);
+}
+
+.le-action.released {
+  color: var(--release);
+}
+
+.le-date {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.reset-area {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.reset-btn {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.reset-btn:hover {
+  color: var(--orange);
+}
+
+.footer {
+  border-top: 1.5px solid var(--cream);
+  margin-top: 3rem;
+  padding-top: 1.3rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.footer-note {
+  font-size: 20px;
+  line-height: 1.18;
+  letter-spacing: -.025em;
+  font-weight: 800;
+  color: var(--cream2);
+}
+
+.footer-credit {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (max-width: 1080px) {
+  .intro-shell {
+    min-width: 0;
+    width: min(760px, calc(100vw - 32px));
+    grid-template-columns: 1fr;
+  }
+
+  .intro-left {
+    border-right: 0;
+    border-bottom: 1.5px solid var(--cream);
+  }
+
+  .intro-left,
+  .intro-right {
+    min-height: auto;
+  }
+
+  .intro-right {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 850px) {
+  html, body {
+    overflow-y: auto;
+  }
+
+  .screen {
+    position: absolute;
+    min-height: 100vh;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .community-top {
+    display: block;
+  }
+
+  .community-top p {
+    margin-top: .5rem;
+  }
+
+  .footer {
+    flex-direction: column;
+  }
+}
+
+/* Vocabulary screen */
+#vocab {
+  background: var(--bg);
+}
+
+#vocab.visible {
+  display: block;
+}
+
+.vocab-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 2rem 1.2rem 6rem;
+  position: relative;
+  z-index: 2;
+}
+
+.vocab-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1.5px solid var(--cream);
+  margin-bottom: 3rem;
+  position: sticky;
+  top: 0;
+  background: linear-gradient(180deg, var(--bg) 84%, rgba(8,8,6,0));
+  z-index: 40;
+}
+
+.vocab-topbar-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.vocab-header {
+  margin-bottom: 3.5rem;
+}
+
+.vocab-header-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .9rem;
+}
+
+.vocab-title {
+  font-size: clamp(42px, 6vw, 82px);
+  line-height: .92;
+  letter-spacing: -.07em;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 1.4rem;
+}
+
+.vocab-subtitle {
+  max-width: 620px;
+  font-size: clamp(17px, 1.8vw, 22px);
+  line-height: 1.4;
+  letter-spacing: -.025em;
+  font-weight: 500;
+  color: var(--cream2);
+}
+
+.vocab-section {
+  margin-bottom: 4rem;
+}
+
+.vocab-section-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--orange2);
+  margin-bottom: 1.8rem;
+  padding-bottom: .7rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.vocab-entry {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2rem;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid var(--rule2);
+}
+
+.vocab-entry:last-child {
+  border-bottom: 0;
+}
+
+.vocab-term {
+  font-size: clamp(22px, 2.8vw, 34px);
+  font-weight: 900;
+  letter-spacing: -.05em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--cream);
+  padding-top: .1em;
+}
+
+.vocab-body {
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.55;
+  letter-spacing: -.015em;
+  color: var(--cream2);
+  font-weight: 450;
+}
+
+.vocab-cycle-intro {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.vocab-cycles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.vocab-cycle-entry {
+  padding: 1.4rem 1.4rem 1.4rem 0;
+  border-bottom: 1px solid var(--rule2);
+}
+
+.vocab-cycle-entry:nth-child(even) {
+  padding-left: 1.4rem;
+  border-left: 1px solid var(--rule2);
+}
+
+.vocab-cycle-name {
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 900;
+  letter-spacing: -.04em;
+  text-transform: uppercase;
+  color: var(--cream);
+  margin-bottom: .55rem;
+}
+
+.vocab-cycle-desc {
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: -.01em;
+  color: var(--cream2);
+  margin-bottom: .7rem;
+}
+
+.vocab-cycle-example {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.vocab-footer {
+  border-top: 1.5px solid var(--cream);
+  margin-top: 3rem;
+  padding-top: 1.3rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+@media (max-width: 700px) {
+  .vocab-entry {
+    grid-template-columns: 1fr;
+    gap: .6rem;
+  }
+  .vocab-cycles-grid {
+    grid-template-columns: 1fr;
+  }
+  .vocab-cycle-entry:nth-child(even) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="feedback" id="feedback">
+  <div class="feedback-box">
+    <div class="mono" id="feedback-kicker">TEMPORAL READING UPDATED</div>
+    <h2 id="feedback-title">TIME MOVED</h2>
+    <p id="feedback-copy">A relationship has been renewed. The calendar is recalculating continuity.</p>
+    <div class="mono" id="feedback-month">APR → MAY</div>
+    <button class="btn" onclick="closeFeedback()">Continue →</button>
+  </div>
+</div>
+
+<div class="screen" id="intro">
+  <div class="intro-shell">
+
+    <div class="intro-left">
+      <div class="eyebrow">
+        <a href="https://www.lagoricollective.com/" target="_blank" rel="noopener" class="eyebrow-link">Lagori Collective</a> / Rehearsal Calendar Prototype<br>
+        <span class="eyebrow-authors">
+          <a href="https://www.linkedin.com/in/dhavalhkothari/" target="_blank" rel="noopener" class="eyebrow-link">Dhaval Kothari</a>
+          &amp;
+          <a href="https://www.linkedin.com/in/alifiya-mutaher-63113189/" target="_blank" rel="noopener" class="eyebrow-link">Alifiya Mutaher</a>
+        </span>
+      </div>
+
+      <div class="intro-main">
+        <div class="intro-title">The Rehearsal Calendar</div>
+        <div class="orange-rule"></div>
+        <div class="intro-copy">
+          <p>The Gregorian calendar tells us where we are.</p>
+          <p>The Rehearsal Calendar tracks what is still being carried forward.</p>
+        </div>
+      </div>
+
+      <div class="intro-bottom">
+        <div class="intro-actions">
+          <button class="btn" onclick="enterApp()">Enter the calendar →</button>
+          <button class="btn ghost" onclick="skipToCommunities()">Choose a community</button>
+          <button class="btn ghost" onclick="openVocab('intro')">Vocabulary</button>
+        </div>
+        <div class="intro-sound-row">
+          <button class="sound-toggle" id="landing-mute-btn" onclick="toggleMute()">
+            <span class="sound-icon">♩</span>
+            <span class="sound-label" id="landing-sound-label">Start sound</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="intro-right">
+      <div class="micro">Gregorian calendar: <strong id="intro-greg-month">JUN</strong> / <span id="intro-greg-time">00:00:00</span></div>
+
+      <div class="landing-reading" id="intro-calendar">
+        <div class="intro-practice-row">
+          <div class="intro-ring-wrap">
+            <svg class="intro-cycle-ring" id="intro-ring-svg" viewBox="0 0 108 108" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="54" cy="54" r="40" fill="none" stroke="rgba(243,239,226,0.1)" stroke-width="7"/>
+              <circle id="intro-ring-arc" cx="54" cy="54" r="40" fill="none" stroke="rgba(243,239,226,0.4)" stroke-width="7"
+                stroke-dasharray="0 251.2" stroke-dashoffset="62.8" stroke-linecap="round"
+                style="transition: stroke-dasharray .6s ease, stroke .4s ease"/>
+              <text id="intro-ring-line1" x="54" y="50" text-anchor="middle"
+                font-family="IBM Plex Mono,monospace" font-size="13" font-weight="600"
+                fill="#F3EFE2" letter-spacing="-0.02em">—</text>
+              <text id="intro-ring-line2" x="54" y="65" text-anchor="middle"
+                font-family="IBM Plex Mono,monospace" font-size="7" fill="#817867"
+                letter-spacing="0.06em">—</text>
+            </svg>
+            <div class="intro-cycle-label" id="intro-cycle-label">—</div>
+          </div>
+          <div class="intro-practice-info">
+            <div class="calendar-label">
+              Calendar for<br>
+              <span id="intro-practice-name">Public Library Reading Room</span><br>
+              <span id="intro-practice-geo">Queens, New York</span>
+            </div>
+            <div class="intro-month-display" id="intro-month">MAY</div>
+            <div class="intro-drift-label" id="intro-drift-label">23 days since last return</div>
+          </div>
+        </div>
+
+        <div class="intro-progress" aria-hidden="true" style="margin-top:1.5rem;">
+          <span class="active"></span><span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div class="intro-how">
+        <div class="intro-how-steps">
+          <div class="intro-how-step"><span class="intro-how-num">01 / Return</span> When someone repairs, gathers, tends, or reopens, the calendar moves.</div>
+          <div class="intro-how-step"><span class="intro-how-num">02 / Drift</span> When no one returns and no one decides, the calendar stays still while ordinary time moves on.</div>
+          <div class="intro-how-step"><span class="intro-how-num">03 / Release</span> When a community ends something with care, drift stops. Time moves because ambiguity has ended.</div>
+        </div>
+        <div class="intro-act-nudge" onclick="enterApp()">→ Enter the calendar to act on what you carry</div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="confirm" id="confirm-reset">
+  <p class="confirm-q">Reset all decisions?</p>
+  <p class="confirm-sub">This will restore all practices to their original drift values and clear the log.</p>
+  <div class="confirm-btns">
+    <button class="cbtn yes" id="confirm-reset-yes">Confirm reset</button>
+    <button class="cbtn no" onclick="closeResetConfirm()">Cancel</button>
+  </div>
+</div>
+
+<div class="confirm" id="confirm">
+  <p class="confirm-q" id="confirm-q"></p>
+  <p class="confirm-sub">Release does not mean failure. It means the community is no longer letting the practice disappear by accident.</p>
+  <div class="confirm-btns">
+    <button class="cbtn yes" id="confirm-yes">Confirm release</button>
+    <button class="cbtn no" onclick="closeConfirm()">Cancel</button>
+  </div>
+</div>
+
+<div class="screen gone" id="vocab">
+<div class="vocab-page">
+
+  <div class="vocab-topbar">
+    <button class="topbar-back" onclick="closeVocab()">← Back</button>
+    <div class="vocab-topbar-title">Vocabulary</div>
+  </div>
+
+  <div class="vocab-header">
+    <div class="vocab-header-label">A working glossary</div>
+    <h1 class="vocab-title">The language of this calendar</h1>
+    <p class="vocab-subtitle">These terms are orientations. Ways of entering a different relationship with time and continuity.</p>
+  </div>
+
+  <div class="vocab-section">
+    <div class="vocab-section-label">Core concepts</div>
+
+    <div class="vocab-entry">
+      <div class="vocab-term">Drift</div>
+      <div class="vocab-body">The growing distance between a practice and the last act that renewed it. Drift is information: a record of what has not been returned to, and for how long. Gregorian calendars measure time passing. This calendar measures drift accumulating.</div>
+    </div>
+
+    <div class="vocab-entry">
+      <div class="vocab-term">Return</div>
+      <div class="vocab-body">An act of renewal that restores continuity. Return is the decision to carry something forward, which may or may not involve recovering what was there before. When enough practices in a field are returned to, the calendar moves. Time advances because a community has acted.</div>
+    </div>
+
+    <div class="vocab-entry">
+      <div class="vocab-term">Release</div>
+      <div class="vocab-body">A conscious decision to end something rather than let it disappear by accident. Drift is abandonment without decision. Release is the community choosing to close something with care, which is why the calendar moves when something is released: ambiguity has ended.</div>
+    </div>
+
+    <div class="vocab-entry">
+      <div class="vocab-term">Rehearsal</div>
+      <div class="vocab-body">The practice of return before return is needed. Rehearsal keeps the capacity alive: the muscle memory of gathering, the knowledge of who holds what, the social infrastructure of showing up. A community that rehearses its practices does not need to rebuild them from scratch when crisis arrives.</div>
+    </div>
+  </div>
+
+  <div class="vocab-section">
+    <div class="vocab-section-label">Cycle types</div>
+    <p class="vocab-cycle-intro">Each practice moves on its own temporal logic. These are the reasons a community returns, not durations.</p>
+
+    <div class="vocab-cycles-grid">
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Breath</div>
+        <div class="vocab-cycle-desc">Return here is showing up on the night, picking up an instrument, sitting in the room. The practice is the gathering itself. When the gathering stops, the cycle breaks immediately and the absence is felt in the body before it is named.</div>
+        <div class="vocab-cycle-example">Neighbourhood Jazz Night</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Covenant</div>
+        <div class="vocab-cycle-desc">Return here is the act of choosing again: walking through the door, sitting down, keeping the shared habit alive by doing it. The thing exists only while people keep choosing it. Thins by non-decision: no one announces the ending, it simply stops being chosen.</div>
+        <div class="vocab-cycle-example">Public Library Reading Room</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Friction</div>
+        <div class="vocab-cycle-desc">Return here is the meeting itself: neighbours sitting down to repair a shared rule before it becomes a grievance. The practice does not run on a schedule. It runs on the pressure that builds when people share space and stop talking about it.</div>
+        <div class="vocab-cycle-example">Apartment Courtyard Assembly</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Vigil</div>
+        <div class="vocab-cycle-desc">Return here is the act of checking: reading the output, running the review, asking whether the code still does what it claims. The infrastructure runs without the watching, but the watching is what keeps it trustworthy. When no one looks, nothing breaks immediately. Something is simply no longer being held.</div>
+        <div class="vocab-cycle-example">Open Source Security Circle</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Transmission</div>
+        <div class="vocab-cycle-desc">Return here is the session: one person showing another how to graft a branch, how to open a radio chassis, how to hold the tool. The cycle is measured in who remains willing to teach. When the last person who knows moves away or dies, the cycle breaks permanently and no amount of documentation recovers it.</div>
+        <div class="vocab-cycle-example">Old Orchard Grafting Circle / Community Radio Repair Day</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Threshold</div>
+        <div class="vocab-cycle-desc">Return here is the review: someone deciding that the city has changed enough to ask again whether this route still serves the people on it. The practice does not run on a date. It runs when someone takes responsibility for noticing the gap between what the infrastructure promises and what the people using it experience.</div>
+        <div class="vocab-cycle-example">Night Bus Route Review</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Listening</div>
+        <div class="vocab-cycle-desc">Return here is going to the river: reading the water level, noting the colour, asking what has changed since last time. The river is not a resource being monitored. It is a subject being listened to. The practice is the act of showing up with attention rather than instruments.</div>
+        <div class="vocab-cycle-example">River Monitoring Program</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Ecological</div>
+        <div class="vocab-cycle-desc">Return here is the exchange itself: seeds passed between hands after harvest, before planting. The date is not set in advance. The season sets it. When the harvest comes, the exchange happens. When the harvest is missed, a season of diversity is lost.</div>
+        <div class="vocab-cycle-example">Seed Exchange</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Climatic</div>
+        <div class="vocab-cycle-desc">Return here is opening the shelter before the heat arrives: checking the water supply, telling the neighbourhood it is open, making sure someone is there. The heat season is the window, roughly three months. Missing it is not a scheduling failure. It is a preparedness failure, and people pay for it with their lives.</div>
+        <div class="vocab-cycle-example">Heat Shelter Network</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Reckoning</div>
+        <div class="vocab-cycle-desc">Return here is riding the route and asking the people on it: does this train still go where you need to go? Does it run when you need it to run? The practice is the act of confronting the gap between what the infrastructure was built for and what it is actually doing for the people whose lives depend on it.</div>
+        <div class="vocab-cycle-example">Rural Night Train Review</div>
+      </div>
+
+      <div class="vocab-cycle-entry">
+        <div class="vocab-cycle-name">Memorial</div>
+        <div class="vocab-cycle-desc">Return here is cooking together: who brings what, who stands where, what gets made, what gets passed around. The knowledge is not in a recipe. It is in the doing alongside each other. The cycle returns twice a year because memory needs rehearsing before it needs recovering. When the people who remember are gone, what remains is only the form.</div>
+        <div class="vocab-cycle-example">Festival Kitchen Rota</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="vocab-footer">
+    <span class="footer-note">Different things drift at different rates.</span>
+    <span class="footer-credit">
+      <a href="https://www.lagoricollective.com/" target="_blank" rel="noopener" class="footer-link">Lagori Collective</a> — 02026<br>
+      <a href="https://www.linkedin.com/in/dhavalhkothari/" target="_blank" rel="noopener" class="footer-link">Dhaval Kothari</a>
+      &amp;
+      <a href="https://www.linkedin.com/in/alifiya-mutaher-63113189/" target="_blank" rel="noopener" class="footer-link">Alifiya Mutaher</a>
+    </span>
+  </div>
+
+</div>
+</div>
+
+<div class="screen gone" id="main">
+<div class="page">
+
+  <div class="topbar">
+    <button class="topbar-back" onclick="goBack()">← The Rehearsal Calendar</button>
+    <div style="display:flex;gap:1.2rem;align-items:center;">
+      <button class="sound-toggle" id="mute-btn" onclick="toggleMute()" title="Toggle sound">
+        <span class="sound-icon">♩</span>
+        <span class="sound-label" id="main-sound-label">Sound on</span>
+      </button>
+      <button class="topbar-back" onclick="openVocab('main')" style="color:var(--cream2);">Vocabulary</button>
+      <div class="topbar-time" id="top-greg">Gregorian — live</div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div>
+      <div class="section-label">Reorientation of time</div>
+      <h1>Time can be measured by return.</h1>
+    </div>
+    <div>
+      <p>Most calendars tell us that time has passed. This one asks whether something has continued.</p>
+      <p>It tracks drift: the growing distance between a practice and the last act that renewed it.</p>
+      
+    </div>
+  </div>
+
+  <div class="community-panel" id="community-panel">
+    <div class="community-top">
+      <div>
+        <div class="section-label">Which calendars are you inside?</div>
+        <p>The calendar changes depending on what you carry. Choose a field of belonging to see the practices whose time you are inside.</p>
+      </div>
+      <div class="practice-count" id="practice-count">—</div>
+    </div>
+    <div class="tabs" id="community-tabs"></div>
+  </div>
+
+  <div class="map-section">
+    <div class="section-label" id="map-label">Selected calendar field</div>
+    <div class="map-wrap">
+      <svg id="world-map" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+        <g fill="none" stroke="rgba(243,239,226,.12)" stroke-width="1">
+          <path d="M 80 80 L 100 70 L 160 65 L 180 80 L 190 110 L 170 140 L 150 160 L 130 180 L 110 200 L 90 220 L 80 200 L 70 160 L 75 120 Z"/>
+          <path d="M 140 220 L 160 210 L 175 230 L 180 260 L 170 300 L 155 330 L 140 310 L 130 280 L 135 250 Z"/>
+          <path d="M 340 60 L 380 55 L 400 70 L 395 90 L 370 100 L 345 95 L 335 80 Z"/>
+          <path d="M 345 110 L 385 105 L 405 130 L 410 170 L 400 210 L 385 240 L 365 250 L 345 230 L 335 190 L 335 150 Z"/>
+          <path d="M 400 60 L 520 50 L 580 65 L 610 85 L 600 110 L 560 130 L 500 140 L 450 130 L 410 110 L 400 85 Z"/>
+          <path d="M 500 130 L 530 125 L 545 145 L 540 175 L 520 185 L 500 170 L 490 150 Z"/>
+          <path d="M 560 130 L 600 120 L 620 145 L 600 165 L 570 160 Z"/>
+          <path d="M 600 230 L 660 220 L 690 240 L 690 280 L 665 300 L 625 295 L 600 270 Z"/>
+          <path d="M 630 85 L 645 80 L 655 90 L 645 105 L 632 100 Z"/>
+        </g>
+        <g id="map-dots"></g>
+      </svg>
+      <div class="map-tooltip" id="map-tooltip"></div>
+      <div class="map-legend">
+        <span><span class="legend-dot" style="background:var(--amber)"></span>Drifting</span>
+        <span><span class="legend-dot" style="background:var(--green)"></span>Current</span>
+        <span><span class="legend-dot" style="background:var(--release)"></span>Released</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="aggregate-panel" id="aggregate-panel">
+    <div class="agg-left">
+      <div class="section-label">State of this field</div>
+      <div class="agg-sentence" id="agg-sentence">—</div>
+    </div>
+    <div class="agg-right">
+      <div class="agg-stat" id="agg-current-wrap">
+        <div class="agg-num" id="agg-current">—</div>
+        <div class="agg-label">carried forward</div>
+      </div>
+      <div class="agg-stat" id="agg-drifting-wrap">
+        <div class="agg-num" id="agg-drifting">—</div>
+        <div class="agg-label">since last return</div>
+      </div>
+      <div class="agg-stat" id="agg-released-wrap">
+        <div class="agg-num" id="agg-released">—</div>
+        <div class="agg-label">consciously released</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="practices-head">
+    <div class="section-label" id="practices-label">Concurrent calendars</div>
+    <div class="practice-count" id="visible-count">—</div>
+  </div>
+  <div id="practice-list"></div>
+
+  <div class="log-section">
+    <div class="section-label">Decisions recorded</div>
+    <div id="log-body"><p class="log-empty">No decisions recorded yet. The calendar is waiting.</p></div>
+  </div>
+
+  <div class="reset-area"><button class="reset-btn" onclick="askReset()">Reset to original state</button></div>
+
+  <div class="footer">
+    <span class="footer-note">Different things drift at different rates.</span>
+    <span class="footer-credit">
+      <a href="https://www.lagoricollective.com/" target="_blank" rel="noopener" class="footer-link">Lagori Collective</a> — 02026<br>
+      <a href="https://www.linkedin.com/in/dhavalhkothari/" target="_blank" rel="noopener" class="footer-link">Dhaval Kothari</a>
+      &amp;
+      <a href="https://www.linkedin.com/in/alifiya-mutaher-63113189/" target="_blank" rel="noopener" class="footer-link">Alifiya Mutaher</a>
+    </span>
+  </div>
+
+</div>
+</div>
+
+<script>
+const COMMUNITIES = [
+  {id:'urban', label:'Urban residents'},
+  {id:'landwater', label:'Land & water stewards'},
+  {id:'culture', label:'Culture keepers'},
+  {id:'infra', label:'Infrastructure maintainers'},
+  {id:'knowledge', label:'Knowledge commons'}
+];
+
+const PRACTICES = [
+  {id:'library', communities:['knowledge','culture','urban'], name:'Public Library Reading Room', geo:'Queens, New York', drift:23, month:'MAY', cycle:30, cycleType:'covenant', mx:155, my:118,
+   context:'A quiet room where job seekers, students, retirees, and new arrivals formed a daily commons.',
+   explain:'The room is open. The shared habit that made it more than a room is beginning to thin.'},
+  {id:'river', communities:['landwater','infra'], name:'River Monitoring Program', geo:'Mahaweli Basin, Sri Lanka', drift:312, month:'JAN', cycle:90, cycleType:'listening', mx:522, my:170,
+   context:'A network that once tracked the health of a river across three districts.',
+   explain:'The sensors remain. The shared practice of reading, verifying, and responding to the river has lapsed.'},
+  {id:'seed', communities:['landwater','culture'], name:'Seed Exchange', geo:'Koraput, Odisha, India', drift:0, month:'JUN', cycle:180, cycleType:'ecological', mx:518, my:155,
+   context:'A seasonal exchange held after harvest. Returned to last week.',
+   explain:'Zero days adrift means the relationship is still being actively carried forward.'},
+  {id:'heat', communities:['urban','infra'], name:'Heat Shelter Network', geo:'Ahmedabad, India', drift:94, month:'APR', cycle:90, cycleType:'climatic', mx:510, my:148,
+   context:'Established after a deadly heatwave. Still standing. Not yet returned to this season.',
+   explain:'The shelter remains visible. The act of opening, checking, and making it socially available has drifted.'},
+  {id:'courtyard', communities:['urban','culture'], name:'Apartment Courtyard Assembly', geo:'Singapore', drift:41, month:'APR', cycle:30, cycleType:'friction', mx:580, my:165,
+   context:'A monthly gathering where residents repaired shared rules before they became complaints.',
+   explain:'The courtyard is still there. The recurring act of negotiation has loosened from the place.'},
+  {id:'nightbus', communities:['urban','infra'], name:'Night Bus Route Review', geo:'Bengaluru, India', drift:128, month:'MAY', cycle:90, cycleType:'threshold', mx:512, my:158,
+   context:'A late-night route reviewed with nurses, guards, students, and service workers.',
+   explain:'The timetable continues. The practice of asking whether it still carries the city has stopped.'},
+  {id:'orchard', communities:['landwater','culture'], name:'Old Orchard Grafting Circle', geo:'Normandy, France', drift:208, month:'FEB', cycle:365, cycleType:'transmission', mx:365, my:82,
+   context:'A group that kept old fruit varieties alive through winter grafting sessions.',
+   explain:'The trees may keep fruiting for a while. The skill that renews the orchard is what is drifting.'},
+  {id:'jazz', communities:['culture','urban'], name:'Neighbourhood Jazz Night', geo:'New Orleans, USA', drift:156, month:'MAR', cycle:7, cycleType:'breath', mx:130, my:130,
+   context:'A weekly night that held musicians, elders, neighbours, and newcomers in rhythm.',
+   explain:'The room exists. The instruments exist. The interval between gatherings has become its own form of time.'},
+  {id:'festival', communities:['culture','urban'], name:'Festival Kitchen Rota', geo:'Kuala Lumpur, Malaysia', drift:67, month:'MAY', cycle:180, cycleType:'memorial', mx:565, my:168,
+   context:'A rotating kitchen that fed a neighbourhood during an annual street festival.',
+   explain:'The festival date may return. The people who know how to hold the kitchen together are drifting apart.'},
+  {id:'train', communities:['infra','urban'], name:'Rural Night Train Review', geo:'Hokkaido, Japan', drift:88, month:'APR', cycle:180, cycleType:'reckoning', mx:638, my:92,
+   context:'A single night train connecting twelve rural towns. Still scheduled. Rarely reviewed.',
+   explain:'The route persists as infrastructure. Its relationship with the people it was built for is weakening.'},
+  {id:'opensource', communities:['knowledge','infra'], name:'Open Source Security Circle', geo:'Distributed / Online', drift:119, month:'MAR', cycle:30, cycleType:'vigil', mx:400, my:72,
+   context:'A volunteer circle that reviewed small but widely used code dependencies.',
+   explain:'The repository is alive. The cadence of collective review has drifted from the infrastructure it protects.'},
+  {id:'radio', communities:['knowledge','culture','infra'], name:'Community Radio Repair Day', geo:'Valparaíso, Chile', drift:74, month:'SEP', cycle:30, cycleType:'transmission', mx:225, my:250,
+   context:'A monthly session where old radios were repaired and local transmission knowledge was passed on.',
+   explain:'The radios may still work. The practice of keeping the airwaves collectively repairable is what drifts.'}
+];
+
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+let state = {drifts:{}, statuses:{}, monthIdxByCommunity:{}, log:[]};
+let selectedCommunity = 'urban';
+let confirmTarget = null;
+let introIdx = 0;
+
+function cycleLabel(type) {
+  const labels = {
+    breath:       'Breath cycle',
+    covenant:     'Covenant cycle',
+    friction:     'Friction cycle',
+    vigil:        'Vigil cycle',
+    transmission: 'Transmission cycle',
+    threshold:    'Threshold cycle',
+    listening:    'Listening cycle',
+    ecological:   'Ecological cycle',
+    climatic:     'Climatic cycle',
+    reckoning:    'Reckoning cycle',
+    memorial:     'Memorial cycle'
+  };
+  return labels[type] || 'Cycle';
+}
+
+function cycleDesc(type) {
+  const descs = {
+    breath:       'Returns by rhythm, felt immediately when it stops',
+    covenant:     'Exists only while actively renewed, thins by non-decision',
+    friction:     'Returns when social tension has accumulated enough to address',
+    vigil:        'Requires continuous watching, attention is the act of return',
+    transmission: 'Returns while someone can still teach, measured in who remains',
+    threshold:    'Returns when conditions have shifted enough to warrant it',
+    listening:    'The river speaks. Return is an act of tuning back in',
+    ecological:   'Tied to non-human cycles. The world sets the time',
+    climatic:     'The heat decides. Return is always also a preparation',
+    reckoning:    'Returns when the gap between promise and reality grows too wide',
+    memorial:     'Returns around shared remembering, enacts what must not be forgotten'
+  };
+  return descs[type] || '';
+}
+
+function makeRingSVG(drift, cycle, cls, released) {
+  // Guard against undefined/NaN
+  const d = (typeof drift === 'number' && !isNaN(drift)) ? drift : 0;
+  const c = (typeof cycle === 'number' && cycle > 0) ? cycle : 365;
+
+  const R = 40;
+  const cx = 54, cy = 54;
+  const circumference = 2 * Math.PI * R;
+  const pct = Math.min(d / c, 1);
+  const overdue = d > c;
+
+  // Track always full circle
+  // Arc fills clockwise from top
+  const arcLen = circumference * pct;
+  const dashOffset = circumference * 0.25; // start from top
+
+  let arcCol, trackCol;
+  trackCol = 'rgba(243,239,226,0.1)';
+
+  if (released) {
+    arcCol = '#A884C8';
+  } else if (d === 0) {
+    arcCol = '#63B36A';
+  } else if (overdue || pct > 0.85) {
+    arcCol = '#C4995A'; // amber — overdue or close
+  } else if (pct > 0.5) {
+    arcCol = '#D4AA72'; // lighter amber — halfway
+  } else {
+    arcCol = 'rgba(243,239,226,0.4)'; // neutral — early in cycle
+  }
+
+  // Centre text
+  let line1, line2;
+  if (released) {
+    line1 = '○'; line2 = 'released';
+  } else if (d === 0) {
+    line1 = '✓'; line2 = 'current';
+  } else if (overdue) {
+    line1 = d + 'd'; line2 = 'drift';
+  } else {
+    line1 = d + 'd'; line2 = (c - d) + 'd left';
+  }
+
+  return `<svg class="cycle-ring" viewBox="0 0 108 108" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${trackCol}" stroke-width="7"/>
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${arcCol}" stroke-width="7"
+      stroke-dasharray="${arcLen} ${circumference - arcLen}"
+      stroke-dashoffset="${dashOffset}"
+      stroke-linecap="round"
+      style="transition: stroke-dasharray 0.8s ease"/>
+    <text x="${cx}" y="${cy - 4}" text-anchor="middle"
+      font-family="IBM Plex Mono,monospace" font-size="13" font-weight="600"
+      fill="#F3EFE2" letter-spacing="-0.02em">${line1}</text>
+    <text x="${cx}" y="${cy + 11}" text-anchor="middle"
+      font-family="IBM Plex Mono,monospace" font-size="7" fill="#817867"
+      letter-spacing="0.06em">${line2}</text>
+  </svg>`;
+}
+function communityLabel(id){ return (COMMUNITIES.find(x => x.id === id) || {}).label || 'Selected community'; }
+function monthIndex(m){ const i = MONTHS.indexOf(m); return i === -1 ? 0 : i; }
+
+function load(){
+  try {
+    const s = localStorage.getItem('rc_final_abbrev_locked_v1');
+    if(s) state = JSON.parse(s);
+  } catch(e) {}
+
+  if(!state.drifts) state.drifts = {};
+  if(!state.statuses) state.statuses = {};
+  if(!state.monthIdxByCommunity) state.monthIdxByCommunity = {};
+  if(!state.log) state.log = [];
+
+  // Accumulate real drift since last visit
+  const now = Date.now();
+  if(state.lastVisit){
+    const daysSince = Math.floor((now - state.lastVisit) / (1000 * 60 * 60 * 24));
+    if(daysSince > 0){
+      PRACTICES.forEach(p => {
+        if(state.statuses[p.id] === 'adrift'){
+          state.drifts[p.id] = Math.min((state.drifts[p.id] || 0) + daysSince, 999);
+        }
+      });
+    }
+  }
+  state.lastVisit = now;
+
+  COMMUNITIES.forEach(c => {
+    if(state.monthIdxByCommunity[c.id] === undefined){
+      const visible = PRACTICES.filter(p => p.communities.includes(c.id));
+      const earliest = visible.reduce((min,p) => Math.min(min, monthIndex(p.month)), 11);
+      state.monthIdxByCommunity[c.id] = earliest;
+    }
+  });
+
+  PRACTICES.forEach(p => {
+    if(state.drifts[p.id] === undefined) state.drifts[p.id] = p.drift;
+    if(!state.statuses[p.id]) state.statuses[p.id] = p.drift === 0 ? 'clear' : 'adrift';
+  });
+}
+
+function save(){
+  try {
+    state.lastVisit = Date.now();
+    localStorage.setItem('rc_final_abbrev_locked_v1', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function nowFull(){
+  const n = new Date();
+  return MONTHS[n.getMonth()] + ' ' + n.getDate() + ', ' + n.getFullYear();
+}
+
+function nowStr(){
+  const n = new Date();
+  return 'Gregorian — ' + MONTHS[n.getMonth()] + ' ' + n.getDate() + ' ' +
+    String(n.getHours()).padStart(2,'0') + ':' +
+    String(n.getMinutes()).padStart(2,'0') + ':' +
+    String(n.getSeconds()).padStart(2,'0');
+}
+
+function nowMonthShort(){
+  return MONTHS[new Date().getMonth()];
+}
+
+function nowTime(){
+  const n = new Date();
+  return String(n.getHours()).padStart(2,'0') + ':' +
+    String(n.getMinutes()).padStart(2,'0') + ':' +
+    String(n.getSeconds()).padStart(2,'0');
+}
+
+function visiblePractices(){
+  return PRACTICES.filter(p => p.communities.includes(selectedCommunity));
+}
+
+function dc(id){
+  const s = state.statuses[id];
+  if(s === 'released') return 'released';
+  if(state.drifts[id] === 0) return 'clear';
+  return 'adrift';
+}
+
+function avgDrift(){
+  const active = visiblePractices().filter(p => state.statuses[p.id] !== 'released');
+  if(!active.length) return 0;
+  const sum = active.reduce((a,p) => {
+    const d = (typeof state.drifts[p.id] === 'number' && !isNaN(state.drifts[p.id])) ? state.drifts[p.id] : 0;
+    return a + d;
+  }, 0);
+  return Math.round(sum / active.length);
+}
+
+function renderIntroCalendar(){
+  const p = PRACTICES[introIdx % PRACTICES.length];
+  const reading = document.getElementById('intro-calendar');
+  reading.classList.remove('fade-change');
+  void reading.offsetWidth;
+  reading.classList.add('fade-change');
+
+  document.getElementById('intro-practice-name').textContent = p.name;
+  document.getElementById('intro-practice-geo').textContent = p.geo;
+
+  // Month — flicker through a few random months then land
+  const monthEl = document.getElementById('intro-month');
+  if(monthEl){
+    let flickers = 0;
+    const totalFlickers = 5;
+    const flickerInterval = setInterval(() => {
+      if(flickers < totalFlickers){
+        monthEl.textContent = MONTHS[Math.floor(Math.random() * MONTHS.length)];
+        flickers++;
+      } else {
+        monthEl.textContent = p.month;
+        clearInterval(flickerInterval);
+      }
+    }, 55);
+  }
+
+  const liveDrift = (state.drifts[p.id] !== undefined) ? state.drifts[p.id] : p.drift;
+  const driftEl = document.getElementById('intro-drift-label');
+  if(driftEl) driftEl.textContent = liveDrift === 0 ? 'Carried forward' : liveDrift + ' days since last return';
+  document.getElementById('intro-cycle-label').textContent = cycleLabel(p.cycleType);
+
+  // Update the ring arc
+  const R = 40, circumference = 2 * Math.PI * R;
+  const pct = Math.min(liveDrift / p.cycle, 1);
+  const arcLen = circumference * pct;
+  const arc = document.getElementById('intro-ring-arc');
+  if(arc){
+    let col;
+    if(liveDrift === 0) col = '#63B36A';
+    else if(pct > 0.85) col = '#C4995A';
+    else if(pct > 0.5) col = '#D4AA72';
+    else col = 'rgba(243,239,226,0.4)';
+    arc.setAttribute('stroke-dasharray', `${arcLen} ${circumference - arcLen}`);
+    arc.setAttribute('stroke', col);
+  }
+  const line1 = document.getElementById('intro-ring-line1');
+  const line2 = document.getElementById('intro-ring-line2');
+  if(line1) line1.textContent = liveDrift === 0 ? '✓' : liveDrift + 'd';
+  if(line2) line2.textContent = liveDrift === 0 ? 'current' : (liveDrift > p.cycle ? 'drift' : (p.cycle - liveDrift) + 'd left');
+
+  document.querySelectorAll('.intro-progress span').forEach((dot, i) => {
+    dot.classList.toggle('active', i === (introIdx % PRACTICES.length) % 4);
+  });
+
+  introIdx++;
+}
+
+function renderTabs(){
+  const el = document.getElementById('community-tabs');
+  el.innerHTML = '';
+
+  COMMUNITIES.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (selectedCommunity === c.id ? ' active' : '');
+    btn.textContent = c.label;
+    btn.onclick = () => {
+      selectedCommunity = c.id;
+      render();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function renderMap(){
+  const dotsEl = document.getElementById('map-dots');
+  if(!dotsEl) return;
+
+  dotsEl.innerHTML = '';
+  const tooltip = document.getElementById('map-tooltip');
+
+  visiblePractices().forEach(p => {
+    const cls = dc(p.id);
+    const d = state.drifts[p.id];
+    const color = cls === 'clear' ? '#63B36A' : cls === 'released' ? '#A884C8' : '#F06A25';
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('cursor','pointer');
+
+    if(cls === 'adrift' && d > 50){
+      const ripple = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      ripple.setAttribute('cx', p.mx);
+      ripple.setAttribute('cy', p.my);
+      ripple.setAttribute('r', '12');
+      ripple.setAttribute('fill', 'none');
+      ripple.setAttribute('stroke', color);
+      ripple.setAttribute('stroke-width', '1.2');
+
+      const anim = document.createElementNS('http://www.w3.org/2000/svg','animate');
+      anim.setAttribute('attributeName','r');
+      anim.setAttribute('from','12');
+      anim.setAttribute('to','26');
+      anim.setAttribute('dur','2.3s');
+      anim.setAttribute('repeatCount','indefinite');
+
+      const anim2 = document.createElementNS('http://www.w3.org/2000/svg','animate');
+      anim2.setAttribute('attributeName','opacity');
+      anim2.setAttribute('from','.5');
+      anim2.setAttribute('to','0');
+      anim2.setAttribute('dur','2.3s');
+      anim2.setAttribute('repeatCount','indefinite');
+
+      ripple.appendChild(anim);
+      ripple.appendChild(anim2);
+      g.appendChild(ripple);
+    }
+
+    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx', p.mx);
+    dot.setAttribute('cy', p.my);
+    dot.setAttribute('r', '9');
+    dot.setAttribute('fill', color);
+    dot.setAttribute('opacity', '.94');
+    g.appendChild(dot);
+
+    g.addEventListener('mouseenter', () => {
+      const svgRect = document.getElementById('world-map').getBoundingClientRect();
+      tooltip.style.left = (p.mx * (svgRect.width / 800) + 8) + 'px';
+      tooltip.style.top = (p.my * (svgRect.height / 400) - 10) + 'px';
+      const val = cls === 'released' ? 'Released' : d === 0 ? 'Current' : d + ' days since last return';
+      tooltip.textContent = p.name + ' — ' + val;
+      tooltip.style.opacity = '1';
+    });
+
+    g.addEventListener('mouseleave', () => tooltip.style.opacity = '0');
+
+    g.addEventListener('click', () => {
+      const card = document.getElementById('card-' + p.id);
+      if(card){
+        card.classList.add('highlighted');
+        card.scrollIntoView({behavior:'smooth', block:'center'});
+        setTimeout(() => card.classList.remove('highlighted'), 1500);
+      }
+    });
+
+    dotsEl.appendChild(g);
+  });
+}
+
+function render(){
+  renderTabs();
+
+  const visible = visiblePractices();
+  const label = communityLabel(selectedCommunity);
+  const drift = avgDrift();
+  const month = MONTHS[Math.min(state.monthIdxByCommunity[selectedCommunity], 11)];
+
+  document.getElementById('practice-count').textContent = visible.length + ' active calendars';
+  document.getElementById('visible-count').textContent = label + ' / ' + visible.length + ' calendars';
+  document.getElementById('practices-label').textContent = 'Concurrent calendars / ' + label;
+  document.getElementById('map-label').textContent = 'Selected calendar field / ' + label;
+
+  const list = document.getElementById('practice-list');
+  list.innerHTML = '';
+
+  visible.forEach(p => {
+    const d = (state.drifts[p.id] !== undefined && !isNaN(state.drifts[p.id])) ? state.drifts[p.id] : p.drift;
+    const cls = dc(p.id);
+    const released = state.statuses[p.id] === 'released';
+    const current = d === 0 && !released;
+    const driftDisplay = released ? 'Consciously released' : current ? 'Carried forward — returned recently' : d + ' days since last return';
+
+    const card = document.createElement('div');
+    card.className = 'practice' + (released ? ' is-released' : '');
+    card.id = 'card-' + p.id;
+    const gregMonthIdx = new Date().getMonth(); // 0-based
+    const practiceMonthIdx = MONTHS.indexOf(p.month);
+    const monthDiff = gregMonthIdx - practiceMonthIdx;
+    let gregDisp = '';
+    if (d === 0 && practiceMonthIdx === gregMonthIdx) {
+      gregDisp = `<span class="greg-displacement current">in season</span>`;
+    } else if (monthDiff > 0) {
+      gregDisp = `<span class="greg-displacement behind">${monthDiff} month${monthDiff > 1 ? 's' : ''} behind gregorian</span>`;
+    } else if (monthDiff < 0) {
+      const ahead = Math.abs(monthDiff);
+      gregDisp = `<span class="greg-displacement behind">${ahead} month${ahead > 1 ? 's' : ''} ahead of gregorian</span>`;
+    }
+
+    card.innerHTML = `
+      <div class="practice-card-inner">
+        <div class="practice-ring-col">
+          ${makeRingSVG(d, p.cycle, cls, released)}
+          <div class="cycle-label-text">${cycleLabel(p.cycleType)}</div>
+          <div class="cycle-desc-text">${cycleDesc(p.cycleType)}</div>
+        </div>
+        <div class="practice-body-col">
+          <div class="practice-head">
+            <div class="practice-name">${p.name}</div>
+            <div class="practice-reading">
+              <span class="practice-month">${p.month}</span>${gregDisp}
+              <span class="practice-drift-inline">${driftDisplay}</span>
+            </div>
+            <div class="practice-geo">${p.geo}</div>
+            <div class="practice-context">${p.context}</div>
+          </div>
+          <div class="practice-meta">
+            <div class="practice-explain-text">${p.explain}</div>
+          </div>
+          ${!released ? `
+          <div class="practice-actions">
+            <button class="pact-btn ret" onclick="doReturn('${p.id}')" ${current ? 'disabled' : ''}>↩ Return to practice</button>
+            <button class="pact-btn rel" onclick="askRelease('${p.id}')">○ Consciously release</button>
+          </div>` : `<div class="practice-released-line">Consciously released. Calendar advanced.</div>`}
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  const logEl = document.getElementById('log-body');
+  const logs = state.log.filter(e => visible.some(p => p.id === e.id));
+
+  if(!logs.length){
+    logEl.innerHTML = '<p class="log-empty">No decisions recorded yet. The calendar is waiting.</p>';
+  } else {
+    logEl.innerHTML = '';
+    [...logs].reverse().forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'log-entry';
+      row.innerHTML = `
+        <span class="le-name">${e.name}</span>
+        <span class="le-action ${e.action}">${e.action === 'returned' ? '↩ Returned' : '○ Released'}</span>
+        <span class="le-date">${e.date}</span>
+      `;
+      logEl.appendChild(row);
+    });
+  }
+
+  // Aggregate panel
+  const currentCount = visible.filter(p => state.statuses[p.id] === 'clear' || state.drifts[p.id] === 0).length;
+  const driftingCount = visible.filter(p => state.statuses[p.id] === 'adrift' && state.drifts[p.id] > 0).length;
+  const releasedCount = visible.filter(p => state.statuses[p.id] === 'released').length;
+  const avgD = avgDrift();
+
+  document.getElementById('agg-current').textContent = currentCount;
+  document.getElementById('agg-current').className = 'agg-num is-current';
+  document.getElementById('agg-drifting').textContent = driftingCount > 0 ? avgD + ' days' : '—';
+  document.getElementById('agg-drifting').className = 'agg-num' + (driftingCount > 0 ? ' is-drifting' : '');
+  document.getElementById('agg-released').textContent = releasedCount;
+  document.getElementById('agg-released').className = 'agg-num' + (releasedCount > 0 ? ' is-released' : '');
+
+  // Aggregate sentence — reads the room
+  let aggText;
+  if (driftingCount === 0 && releasedCount === 0) {
+    aggText = 'Every practice in this field is being actively carried forward.';
+  } else if (driftingCount === 0 && releasedCount > 0) {
+    aggText = 'All active practices are current. ' + releasedCount + (releasedCount === 1 ? ' practice has' : ' practices have') + ' been consciously let go.';
+  } else if (currentCount === 0) {
+    aggText = 'No practice in this field has been returned to recently. The average distance from last return is ' + avgD + ' days.';
+  } else {
+    aggText = currentCount + ' of ' + visible.length + ' practices are being carried forward. ' + driftingCount + (driftingCount === 1 ? ' has' : ' have') + ' not been returned to, on average ' + avgD + ' days since last return.';
+  }
+  document.getElementById('agg-sentence').textContent = aggText;
+
+  renderMap();
+}
+
+function unresolvedCount(){
+  return visiblePractices().filter(p => state.statuses[p.id] === 'adrift' && state.drifts[p.id] > 0).length;
+}
+
+function advance(){
+  const before = state.monthIdxByCommunity[selectedCommunity];
+  if(unresolvedCount() === 0 && before < 11) {
+    state.monthIdxByCommunity[selectedCommunity]++;
+  }
+  return state.monthIdxByCommunity[selectedCommunity] !== before;
+}
+
+function doReturn(id){
+  const p = PRACTICES.find(x => x.id === id);
+  const oldMonth = MONTHS[state.monthIdxByCommunity[selectedCommunity]];
+  const fromDays = (typeof state.drifts[id] === 'number' && !isNaN(state.drifts[id])) ? state.drifts[id] : p.drift || 0;
+
+  state.drifts[id] = 0;
+  state.statuses[id] = 'clear';
+  state.log.push({id:p.id, name:p.name, action:'returned', date:nowFull()});
+
+  const moved = advance();
+  const newMonth = MONTHS[state.monthIdxByCommunity[selectedCommunity]];
+  save();
+
+  // Animate the ring countdown BEFORE re-rendering so the card is still visible
+  animateRingCountdown(id, fromDays, () => {
+    render();
+    if(moved) showMonthBanner(oldMonth, newMonth);
+  });
+
+  showFeedback(
+    moved ? 'TEMPORAL READING UPDATED' : 'CONTINUITY RESTORED',
+    moved ? 'TIME MOVED' : 'PRACTICE RETURNED',
+    `${p.name} has been returned to. Continuity has been restored for this practice.`,
+    moved ? `${oldMonth} → ${newMonth}` : `${oldMonth} REMAINS / ${unresolvedCount()} UNRESOLVED CALENDARS REMAIN`
+  );
+}
+
+function askRelease(id){
+  const p = PRACTICES.find(x => x.id === id);
+  confirmTarget = id;
+  document.getElementById('confirm-q').textContent = p.name + ' will be consciously released.';
+  document.getElementById('confirm').classList.add('open');
+}
+
+function closeConfirm(){
+  document.getElementById('confirm').classList.remove('open');
+  confirmTarget = null;
+}
+
+document.getElementById('confirm-yes').onclick = function(){
+  if(!confirmTarget) return;
+
+  const p = PRACTICES.find(x => x.id === confirmTarget);
+  const oldMonth = MONTHS[state.monthIdxByCommunity[selectedCommunity]];
+
+  state.drifts[confirmTarget] = 0;
+  state.statuses[confirmTarget] = 'released';
+  state.log.push({id:p.id, name:p.name, action:'released', date:nowFull()});
+
+  const moved = advance();
+  const newMonth = MONTHS[state.monthIdxByCommunity[selectedCommunity]];
+  save();
+  closeConfirm();
+  render();
+
+  if(moved) showMonthBanner(oldMonth, newMonth);
+
+  showFeedback(
+    moved ? 'TEMPORAL READING UPDATED' : 'DECISION RECORDED',
+    moved ? 'TIME MOVED' : 'PRACTICE RELEASED',
+    `${p.name} is no longer disappearing by accident. Drift has stopped because a decision has been made.`,
+    moved ? `${oldMonth} → ${newMonth}` : `${oldMonth} REMAINS / ${unresolvedCount()} UNRESOLVED CALENDARS REMAIN`
+  );
+};
+
+function showFeedback(kicker, title, copy, monthLine){
+  document.getElementById('feedback-kicker').textContent = kicker;
+  document.getElementById('feedback-title').textContent = title;
+  document.getElementById('feedback-copy').textContent = copy;
+  document.getElementById('feedback-month').textContent = monthLine;
+  document.getElementById('feedback').classList.add('open');
+}
+
+function closeFeedback(){
+  document.getElementById('feedback').classList.remove('open');
+}
+
+function animateRingCountdown(id, fromDays, onComplete){
+  const card = document.getElementById('card-' + id);
+  if(!card) { if(onComplete) onComplete(); return; }
+
+  const textEl = card.querySelector('.cycle-ring text:first-of-type');
+  if(!textEl) { if(onComplete) onComplete(); return; }
+
+  // Set immediately — no NaN flash
+  const start = (typeof fromDays === 'number' && !isNaN(fromDays) && fromDays > 0) ? fromDays : 0;
+  if(start === 0) {
+    textEl.textContent = '✓';
+    if(onComplete) onComplete();
+    return;
+  }
+
+  textEl.textContent = start + 'd';
+
+  let current = start;
+  const steps = Math.min(start, 28);
+  const decrement = Math.ceil(start / steps);
+
+  const ticker = setInterval(() => {
+    current = Math.max(current - decrement, 0);
+    textEl.textContent = current > 0 ? current + 'd' : '✓';
+    if(current <= 0){
+      clearInterval(ticker);
+      if(onComplete) onComplete();
+    }
+  }, 38);
+}
+
+function showMonthBanner(oldMonth, newMonth){
+  // Top banner that slides down, shows month change, slides away
+  const banner = document.createElement('div');
+  banner.style.cssText = `
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 900;
+    background: var(--cream);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1.2rem 2rem;
+    transform: translateY(-100%);
+    transition: transform .35s cubic-bezier(.22,1,.36,1);
+    font-family: "Instrument Sans", sans-serif;
+  `;
+
+  const oldEl = document.createElement('span');
+  oldEl.style.cssText = 'font-size:clamp(28px,5vw,52px);font-weight:900;letter-spacing:-.06em;text-transform:uppercase;opacity:.35;text-decoration:line-through;';
+  oldEl.textContent = oldMonth;
+
+  const arrow = document.createElement('span');
+  arrow.style.cssText = 'font-size:clamp(18px,3vw,32px);font-weight:400;opacity:.5;';
+  arrow.textContent = '→';
+
+  const newEl = document.createElement('span');
+  newEl.style.cssText = 'font-size:clamp(28px,5vw,52px);font-weight:900;letter-spacing:-.06em;text-transform:uppercase;';
+  newEl.textContent = newMonth;
+
+  const note = document.createElement('span');
+  note.style.cssText = `
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    opacity:.55; margin-left:1rem;
+  `;
+  note.textContent = 'time moved by return';
+
+  banner.appendChild(oldEl);
+  banner.appendChild(arrow);
+  banner.appendChild(newEl);
+  banner.appendChild(note);
+  document.body.appendChild(banner);
+
+  // Slide in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      banner.style.transform = 'translateY(0)';
+    });
+  });
+
+  // Hold then slide out
+  setTimeout(() => {
+    banner.style.transform = 'translateY(-100%)';
+    setTimeout(() => banner.remove(), 400);
+  }, 2800);
+}
+
+function askReset(){
+  document.getElementById('confirm-reset').classList.add('open');
+}
+
+function closeResetConfirm(){
+  document.getElementById('confirm-reset').classList.remove('open');
+}
+
+document.getElementById('confirm-reset-yes').onclick = function(){
+  closeResetConfirm();
+  resetAll();
+};
+
+function resetAll(){
+  localStorage.removeItem('rc_final_abbrev_locked_v1');
+  state = {drifts:{}, statuses:{}, monthIdxByCommunity:{}, log:[]};
+  load();
+  render();
+}
+
+function openVocab(from) {
+  const vocab = document.getElementById('vocab');
+  const fromEl = document.getElementById(from);
+  vocab._from = from;
+
+  // Fade out source
+  if(fromEl) fromEl.classList.add('hidden');
+
+  setTimeout(() => {
+    // Hide source completely, prep vocab
+    if(fromEl) fromEl.classList.add('gone');
+    vocab.classList.remove('gone');
+    vocab.classList.add('visible');
+    vocab.classList.add('hidden'); // start invisible
+    vocab.scrollTo(0, 0);
+
+    // Fade vocab in
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        vocab.classList.remove('hidden');
+      });
+    });
+  }, 650);
+}
+
+function closeVocab() {
+  const vocab = document.getElementById('vocab');
+  const from = vocab._from || 'intro';
+  const fromEl = document.getElementById(from);
+
+  // Fade out vocab
+  vocab.classList.add('hidden');
+
+  setTimeout(() => {
+    // Hide vocab completely, prep source
+    vocab.classList.add('gone');
+    vocab.classList.remove('visible');
+
+    if(fromEl) {
+      fromEl.classList.remove('gone');
+      if(from === 'main') fromEl.classList.add('visible');
+      fromEl.classList.add('hidden'); // start invisible
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          fromEl.classList.remove('hidden');
+        });
+      });
+    }
+  }, 650);
+}
+
+function enterApp(){
+  const intro = document.getElementById('intro');
+  const main = document.getElementById('main');
+
+  intro.classList.add('hidden');
+
+  setTimeout(() => {
+    intro.classList.add('gone');
+    main.classList.remove('gone');
+    main.classList.add('visible');
+    setTimeout(() => main.classList.remove('hidden'), 50);
+    render();
+  }, 650);
+}
+
+function skipToCommunities(){
+  enterApp();
+  setTimeout(() => {
+    document.getElementById('community-panel').scrollIntoView({behavior:'smooth', block:'start'});
+  }, 850);
+}
+
+function goBack(){
+  const intro = document.getElementById('intro');
+  const main = document.getElementById('main');
+
+  main.classList.add('hidden');
+
+  setTimeout(() => {
+    main.classList.add('gone');
+    main.classList.remove('visible');
+    intro.classList.remove('gone');
+    setTimeout(() => intro.classList.remove('hidden'), 50);
+  }, 650);
+}
+
+function tickClock(){
+  const t = document.getElementById('top-greg');
+  if(t) t.textContent = nowStr();
+
+  const igm = document.getElementById('intro-greg-month');
+  if(igm) igm.textContent = nowMonthShort();
+
+  const igt = document.getElementById('intro-greg-time');
+  if(igt) igt.textContent = nowTime();
+}
+
+setInterval(() => {
+  PRACTICES.forEach(p => {
+    if(state.statuses[p.id] === 'adrift') {
+      state.drifts[p.id] = Math.min(state.drifts[p.id] + 1, 999);
+    }
+  });
+  save();
+  if(document.getElementById('main').classList.contains('visible')) render();
+}, 12000);
+
+setInterval(tickClock, 1000);
+setInterval(renderIntroCalendar, 4300);
+
+// ─── AUDIO ────────────────────────────────────────────────────────────────────
+// Mumbai alleyway ambience — distant traffic, voices, crows, birds
+// Source: freesound.org/people/The_Sound_Side/sounds/289182/
+// License: CC Attribution 4.0
+
+let audioEl = null;
+let audioMuted = false;
+let audioStarted = false;
+
+function initAudio() {
+  if (audioStarted) return;
+  audioStarted = true;
+
+  audioEl = new Audio();
+  audioEl.src = 'https://cdn.freesound.org/previews/289/289182_989468-lq.mp3';
+  audioEl.loop = true;
+  audioEl.volume = 0.55;
+  audioEl.preload = 'auto';
+
+  const playPromise = audioEl.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      syncSoundButtons();
+    }).catch(() => {
+      // Blocked — reset so next interaction retries
+      audioStarted = false;
+      audioEl = null;
+    });
+  }
+}
+
+function syncSoundButtons(){
+  const muted = audioMuted;
+  const started = audioStarted;
+  const landingLabel = started ? (muted ? 'Sound off' : 'Sound on') : 'Start sound';
+  const mainLabel = muted ? 'Sound off' : 'Sound on';
+
+  const landingBtn = document.getElementById('landing-mute-btn');
+  const landingLabelEl = document.getElementById('landing-sound-label');
+  if(landingBtn) landingBtn.classList.toggle('muted', muted && started);
+  if(landingLabelEl) landingLabelEl.textContent = landingLabel;
+
+  const mainBtn = document.getElementById('mute-btn');
+  const mainLabelEl = document.getElementById('main-sound-label');
+  if(mainBtn) mainBtn.classList.toggle('muted', muted);
+  if(mainLabelEl) mainLabelEl.textContent = mainLabel;
+}
+
+function toggleMute() {
+  if (!audioEl) {
+    // Audio not started yet — start it then immediately mute
+    startAudio();
+    return;
+  }
+  audioMuted = !audioMuted;
+  if (audioMuted) {
+    audioEl.volume = 0;
+  } else {
+    audioEl.volume = 0.55;
+  }
+  syncSoundButtons();
+}
+
+// ─── WIRE INTO APP ────────────────────────────────────────────────────────────
+
+function startAudio() {
+  if (!audioStarted) {
+    initAudio();
+  } else if (audioEl && audioEl.paused) {
+    audioEl.play();
+  }
+}
+
+// Start audio on first user interaction anywhere on the page
+function _unlockAudio() {
+  startAudio();
+  document.removeEventListener('click', _unlockAudio);
+  document.removeEventListener('keydown', _unlockAudio);
+}
+document.addEventListener('click', _unlockAudio);
+document.addEventListener('keydown', _unlockAudio);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+load();
+renderIntroCalendar();
+tickClock();
+</script>
+
+</body>
+</html>
