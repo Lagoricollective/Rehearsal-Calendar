@@ -1426,7 +1426,7 @@ button {
         <div class="intro-sound-row">
           <button class="sound-toggle" id="landing-mute-btn" onclick="toggleMute()">
             <span class="sound-icon">♩</span>
-            <span class="sound-label" id="landing-sound-label">Sound on</span>
+            <span class="sound-label" id="landing-sound-label">Start sound</span>
           </button>
         </div>
       </div>
@@ -2586,19 +2586,19 @@ function initAudio() {
 
 function syncSoundButtons(){
   const muted = audioMuted;
-  const label = muted ? 'Sound off' : 'Sound on';
+  const started = audioStarted;
+  const landingLabel = started ? (muted ? 'Sound off' : 'Sound on') : 'Start sound';
+  const mainLabel = muted ? 'Sound off' : 'Sound on';
 
-  // Landing button
   const landingBtn = document.getElementById('landing-mute-btn');
-  const landingLabel = document.getElementById('landing-sound-label');
-  if(landingBtn) landingBtn.classList.toggle('muted', muted);
-  if(landingLabel) landingLabel.textContent = label;
+  const landingLabelEl = document.getElementById('landing-sound-label');
+  if(landingBtn) landingBtn.classList.toggle('muted', muted && started);
+  if(landingLabelEl) landingLabelEl.textContent = landingLabel;
 
-  // Main topbar button
   const mainBtn = document.getElementById('mute-btn');
-  const mainLabel = document.getElementById('main-sound-label');
+  const mainLabelEl = document.getElementById('main-sound-label');
   if(mainBtn) mainBtn.classList.toggle('muted', muted);
-  if(mainLabel) mainLabel.textContent = label;
+  if(mainLabelEl) mainLabelEl.textContent = mainLabel;
 }
 
 function toggleMute() {
